@@ -10,6 +10,7 @@ multiple terminal windows.
 ## Features
 
 - Smart worktree creation with automatic path resolution and branch management
+- Quick switching between worktrees by branch name with fuzzy matching
 - Rich status display with modified/untracked counts, sync info, and merge status
 - Interactive TUI for multi-select cleanup
 - Configurable layout strategies (adjacent or subdirectory)
@@ -49,6 +50,11 @@ git wt add feature-auth -b main
 # List all worktrees with status information
 git wt ls
 
+# Switch to a worktree by branch name
+git wt switch feature-auth
+git wt sw feat              # partial match
+git wt switch               # interactive selector
+
 # Clean up merged or stale worktrees
 git wt clean
 git wt clean --merged
@@ -62,6 +68,47 @@ git wt init --local
 # Show version information
 git wt version
 ```
+
+## Switching between worktrees
+
+The `switch` command prints the path of a matching worktree so you can `cd`
+into it. Since a child process cannot change the parent shell's directory,
+you need a small shell wrapper.
+
+### Shell integration
+
+Add one of the following lines to your shell configuration file:
+
+```sh
+# bash (~/.bashrc)
+eval "$(git wt switch --init bash)"
+
+# zsh (~/.zshrc)
+eval "$(git wt switch --init zsh)"
+
+# fish (~/.config/fish/config.fish)
+git wt switch --init fish | source
+```
+
+This defines a `wt` function that automatically `cd`s after `switch`:
+
+```sh
+wt switch feature-auth   # cd into the feature-auth worktree
+wt sw feat               # partial match with short alias
+wt switch                # interactive selector
+wt ls                    # other commands pass through to git wt
+```
+
+### Matching priority
+
+When a branch name argument is given, matching works as follows:
+
+1. **Exact match** -- branch name equals the query
+2. **Prefix match** -- branch name starts with the query
+3. **Substring match** -- branch name contains the query
+
+All comparisons are case-insensitive. If multiple worktrees match, an
+interactive selector is shown.
 
 ## Configuration
 
@@ -113,8 +160,7 @@ post_add = ""
 
 ## TUI Keybindings
 
-The interactive TUI (launched with `git wt` or `git wt clean`) supports the
-following keys.
+### Cleanup TUI (`git wt` / `git wt clean`)
 
 | Key              | Action                      |
 |------------------|-----------------------------|
@@ -125,6 +171,15 @@ following keys.
 | `n`              | Deselect all                |
 | `d` / `Enter`    | Confirm deletion            |
 | `q` / `Esc`      | Quit without changes        |
+
+### Switch selector (`git wt switch`)
+
+| Key              | Action                      |
+|------------------|-----------------------------|
+| `Up` / `k`       | Move cursor up              |
+| `Down` / `j`     | Move cursor down            |
+| `Enter`          | Select worktree             |
+| `q` / `Esc`      | Cancel                      |
 
 ## License
 

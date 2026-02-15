@@ -808,6 +808,155 @@ func TestWorkflow_MultipleWorktrees(t *testing.T) {
 }
 
 // ===========================================================================
+// SWITCH COMMAND TESTS
+// ===========================================================================
+
+func TestSwitch_ExactMatch(t *testing.T) {
+	repo := evalDir(t, testutil.InitTestRepo(t))
+
+	wtPath := evalDir(t, testutil.AddWorktree(t, repo, "feature-switch"))
+
+	stdout, stderr, err := runBinary(t, binPath, repo, "switch", "feature-switch")
+	if err != nil {
+		t.Fatalf("switch failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
+	}
+
+	got := strings.TrimSpace(stdout)
+	if got != wtPath {
+		t.Errorf("expected path %q, got %q", wtPath, got)
+	}
+}
+
+func TestSwitch_PartialMatch(t *testing.T) {
+	repo := evalDir(t, testutil.InitTestRepo(t))
+
+	wtPath := evalDir(t, testutil.AddWorktree(t, repo, "unique-branch"))
+
+	stdout, stderr, err := runBinary(t, binPath, repo, "switch", "unique")
+	if err != nil {
+		t.Fatalf("switch partial match failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
+	}
+
+	got := strings.TrimSpace(stdout)
+	if got != wtPath {
+		t.Errorf("expected path %q, got %q", wtPath, got)
+	}
+}
+
+func TestSwitch_SubstringMatch(t *testing.T) {
+	repo := evalDir(t, testutil.InitTestRepo(t))
+
+	wtPath := evalDir(t, testutil.AddWorktree(t, repo, "feature-auth-v2"))
+
+	stdout, stderr, err := runBinary(t, binPath, repo, "switch", "auth")
+	if err != nil {
+		t.Fatalf("switch substring match failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
+	}
+
+	got := strings.TrimSpace(stdout)
+	if got != wtPath {
+		t.Errorf("expected path %q, got %q", wtPath, got)
+	}
+}
+
+func TestSwitch_NoMatch(t *testing.T) {
+	repo := evalDir(t, testutil.InitTestRepo(t))
+
+	_, stderr, err := runBinary(t, binPath, repo, "switch", "nonexistent")
+	if err == nil {
+		t.Fatal("expected error when no worktree matches, got nil")
+	}
+	if !strings.Contains(stderr, "no worktree matching") {
+		t.Errorf("expected 'no worktree matching' in stderr, got: %s", stderr)
+	}
+}
+
+func TestSwitch_InitZsh(t *testing.T) {
+	repo := evalDir(t, testutil.InitTestRepo(t))
+
+	stdout, stderr, err := runBinary(t, binPath, repo, "switch", "--init", "zsh")
+	if err != nil {
+		t.Fatalf("switch --init zsh failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
+	}
+
+	if !strings.Contains(stdout, "wt()") {
+		t.Errorf("expected shell function 'wt()' in output, got: %s", stdout)
+	}
+	if !strings.Contains(stdout, "cd \"$dir\"") {
+		t.Errorf("expected 'cd' in shell function, got: %s", stdout)
+	}
+}
+
+func TestSwitch_InitBash(t *testing.T) {
+	repo := evalDir(t, testutil.InitTestRepo(t))
+
+	stdout, stderr, err := runBinary(t, binPath, repo, "switch", "--init", "bash")
+	if err != nil {
+		t.Fatalf("switch --init bash failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
+	}
+
+	if !strings.Contains(stdout, "wt()") {
+		t.Errorf("expected shell function 'wt()' in output, got: %s", stdout)
+	}
+}
+
+func TestSwitch_InitFish(t *testing.T) {
+	repo := evalDir(t, testutil.InitTestRepo(t))
+
+	stdout, stderr, err := runBinary(t, binPath, repo, "switch", "--init", "fish")
+	if err != nil {
+		t.Fatalf("switch --init fish failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
+	}
+
+	if !strings.Contains(stdout, "function wt") {
+		t.Errorf("expected 'function wt' in output, got: %s", stdout)
+	}
+}
+
+func TestSwitch_InitUnsupported(t *testing.T) {
+	repo := evalDir(t, testutil.InitTestRepo(t))
+
+	_, stderr, err := runBinary(t, binPath, repo, "switch", "--init", "powershell")
+	if err == nil {
+		t.Fatal("expected error for unsupported shell, got nil")
+	}
+	if !strings.Contains(stderr, "unsupported shell") {
+		t.Errorf("expected 'unsupported shell' in stderr, got: %s", stderr)
+	}
+}
+
+func TestSwitch_CurrentWorktree(t *testing.T) {
+	repo := evalDir(t, testutil.InitTestRepo(t))
+
+	// Switch to the current worktree (master) should work
+	stdout, stderr, err := runBinary(t, binPath, repo, "switch", "master")
+	if err != nil {
+		t.Fatalf("switch to current worktree failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
+	}
+
+	got := strings.TrimSpace(stdout)
+	if got != repo {
+		t.Errorf("expected path %q, got %q", repo, got)
+	}
+}
+
+func TestSwitch_CaseInsensitive(t *testing.T) {
+	repo := evalDir(t, testutil.InitTestRepo(t))
+
+	testutil.AddWorktree(t, repo, "MyFeature")
+
+	stdout, stderr, err := runBinary(t, binPath, repo, "switch", "myfeature")
+	if err != nil {
+		t.Fatalf("case insensitive switch failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
+	}
+
+	got := strings.TrimSpace(stdout)
+	if got == "" {
+		t.Error("expected non-empty path output")
+	}
+}
+
+// ===========================================================================
 // Helper for init tests that need a custom HOME
 // ===========================================================================
 

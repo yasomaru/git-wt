@@ -31,9 +31,10 @@ rich status display, and easy cleanup.
 Run without arguments to open the interactive TUI.
 
 Usage as a git subcommand:
-  git wt              Open interactive worktree manager
+  git wt                  Open interactive worktree manager
   git wt add <branch>     Create a worktree with automatic path and branch setup
   git wt ls               List all worktrees with status information
+  git wt switch [branch]  Switch to a worktree by branch name
   git wt clean            Remove merged or stale worktrees`,
 	SilenceUsage:  true,
 	SilenceErrors: true,

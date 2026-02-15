@@ -109,6 +109,42 @@ func TestLsAliases(t *testing.T) {
 	}
 }
 
+func TestSwitchCommandRegistered(t *testing.T) {
+	// Verify switch command is registered as a subcommand of root.
+	found := false
+	for _, cmd := range rootCmd.Commands() {
+		if cmd.Use == "switch [branch]" {
+			found = true
+
+			// Check aliases
+			hasAlias := false
+			for _, a := range cmd.Aliases {
+				if a == "sw" {
+					hasAlias = true
+					break
+				}
+			}
+			if !hasAlias {
+				t.Error("switch command missing 'sw' alias")
+			}
+			break
+		}
+	}
+	if !found {
+		t.Fatal("switch command not registered on root")
+	}
+}
+
+func TestSwitchCommandInitFlag(t *testing.T) {
+	f := switchCmd.Flags().Lookup("init")
+	if f == nil {
+		t.Fatal("--init flag not registered on switch command")
+	}
+	if f.DefValue != "" {
+		t.Errorf("expected --init default = %q, got %q", "", f.DefValue)
+	}
+}
+
 func TestRootCommandHelp(t *testing.T) {
 	buf := new(bytes.Buffer)
 	rootCmd.SetOut(buf)

@@ -848,3 +848,288 @@ func TestEmptyWorktreeList(t *testing.T) {
 		t.Error("View returned empty string for empty model")
 	}
 }
+
+// ===========================================================================
+// BuildTags (extracted helper) tests
+// ===========================================================================
+
+func TestBuildTagsFunction(t *testing.T) {
+	t.Parallel()
+
+	t.Run("current worktree", func(t *testing.T) {
+		t.Parallel()
+		wt := git.Worktree{Branch: "refs/heads/main", IsCurrent: true}
+		tags := BuildTags(wt)
+		if !strings.Contains(tags, "current") {
+			t.Errorf("BuildTags missing 'current', got %q", tags)
+		}
+	})
+
+	t.Run("merged worktree", func(t *testing.T) {
+		t.Parallel()
+		wt := git.Worktree{Branch: "refs/heads/feat", IsMerged: true}
+		tags := BuildTags(wt)
+		if !strings.Contains(tags, "merged") {
+			t.Errorf("BuildTags missing 'merged', got %q", tags)
+		}
+	})
+
+	t.Run("dirty worktree", func(t *testing.T) {
+		t.Parallel()
+		wt := git.Worktree{Branch: "refs/heads/feat", Modified: 2, Untracked: 1}
+		tags := BuildTags(wt)
+		if !strings.Contains(tags, "modified") {
+			t.Errorf("BuildTags missing 'modified', got %q", tags)
+		}
+	})
+
+	t.Run("clean worktree returns empty", func(t *testing.T) {
+		t.Parallel()
+		wt := git.Worktree{Branch: "refs/heads/feat"}
+		tags := BuildTags(wt)
+		if tags != "" {
+			t.Errorf("BuildTags for clean worktree = %q, want empty", tags)
+		}
+	})
+
+	t.Run("stale worktree", func(t *testing.T) {
+		t.Parallel()
+		wt := git.Worktree{
+			Branch:     "refs/heads/old",
+			LastCommit: time.Now().Add(-60 * 24 * time.Hour),
+		}
+		tags := BuildTags(wt)
+		if !strings.Contains(tags, "stale") {
+			t.Errorf("BuildTags missing 'stale', got %q", tags)
+		}
+	})
+}
+
+// ===========================================================================
+// Selector TUI tests
+// ===========================================================================
+
+func updateSelectorModel(t *testing.T, m selectorModel, msg tea.Msg) selectorModel {
+	t.Helper()
+	result, _ := m.Update(msg)
+	updated, ok := result.(selectorModel)
+	if !ok {
+		t.Fatalf("Update did not return a selectorModel, got %T", result)
+	}
+	return updated
+}
+
+func TestSelectorNew(t *testing.T) {
+	t.Parallel()
+	wts := testWorktrees()
+	m := NewSelector(wts)
+
+	if len(m.items) != len(wts) {
+		t.Fatalf("NewSelector created %d items, want %d", len(m.items), len(wts))
+	}
+	if m.cursor != 0 {
+		t.Errorf("cursor = %d, want 0", m.cursor)
+	}
+	if m.selected != nil {
+		t.Error("selected should be nil on initialization")
+	}
+	if m.done {
+		t.Error("done should be false on initialization")
+	}
+}
+
+func TestSelectorNavigation(t *testing.T) {
+	t.Parallel()
+
+	t.Run("j moves cursor down", func(t *testing.T) {
+		t.Parallel()
+		m := NewSelector(testWorktrees())
+		m = updateSelectorModel(t, m, keyMsg('j'))
+		if m.cursor != 1 {
+			t.Errorf("after 'j': cursor = %d, want 1", m.cursor)
+		}
+	})
+
+	t.Run("k moves cursor up", func(t *testing.T) {
+		t.Parallel()
+		m := NewSelector(testWorktrees())
+		m.cursor = 2
+		m = updateSelectorModel(t, m, keyMsg('k'))
+		if m.cursor != 1 {
+			t.Errorf("after 'k': cursor = %d, want 1", m.cursor)
+		}
+	})
+
+	t.Run("down arrow moves cursor down", func(t *testing.T) {
+		t.Parallel()
+		m := NewSelector(testWorktrees())
+		m = updateSelectorModel(t, m, specialKeyMsg(tea.KeyDown))
+		if m.cursor != 1 {
+			t.Errorf("after KeyDown: cursor = %d, want 1", m.cursor)
+		}
+	})
+
+	t.Run("up arrow moves cursor up", func(t *testing.T) {
+		t.Parallel()
+		m := NewSelector(testWorktrees())
+		m.cursor = 3
+		m = updateSelectorModel(t, m, specialKeyMsg(tea.KeyUp))
+		if m.cursor != 2 {
+			t.Errorf("after KeyUp: cursor = %d, want 2", m.cursor)
+		}
+	})
+
+	t.Run("cursor does not go below zero", func(t *testing.T) {
+		t.Parallel()
+		m := NewSelector(testWorktrees())
+		m = updateSelectorModel(t, m, keyMsg('k'))
+		if m.cursor != 0 {
+			t.Errorf("cursor went below 0: %d", m.cursor)
+		}
+	})
+
+	t.Run("cursor does not exceed last item", func(t *testing.T) {
+		t.Parallel()
+		wts := testWorktrees()
+		m := NewSelector(wts)
+		m.cursor = len(wts) - 1
+		m = updateSelectorModel(t, m, keyMsg('j'))
+		if m.cursor != len(wts)-1 {
+			t.Errorf("cursor exceeded last: %d", m.cursor)
+		}
+	})
+}
+
+func TestSelectorConfirm(t *testing.T) {
+	t.Parallel()
+
+	wts := testWorktrees()
+	m := NewSelector(wts)
+	m.cursor = 1 // feature-a
+
+	result, cmd := m.Update(specialKeyMsg(tea.KeyEnter))
+	updated := result.(selectorModel)
+
+	if updated.selected == nil {
+		t.Fatal("expected selected to be set after enter")
+	}
+	if updated.selected.BranchShort() != "feature-a" {
+		t.Errorf("expected selected = feature-a, got %s", updated.selected.BranchShort())
+	}
+	if !updated.done {
+		t.Error("expected done = true after enter")
+	}
+	if cmd == nil {
+		t.Error("expected tea.Quit command after enter")
+	}
+}
+
+func TestSelectorCancel(t *testing.T) {
+	t.Parallel()
+
+	cancelKeys := []struct {
+		name string
+		msg  tea.Msg
+	}{
+		{"q", keyMsg('q')},
+		{"esc", specialKeyMsg(tea.KeyEsc)},
+		{"ctrl+c", specialKeyMsg(tea.KeyCtrlC)},
+	}
+
+	for _, k := range cancelKeys {
+		t.Run(k.name+" cancels selector", func(t *testing.T) {
+			t.Parallel()
+			m := NewSelector(testWorktrees())
+
+			result, cmd := m.Update(k.msg)
+			updated := result.(selectorModel)
+
+			if updated.selected != nil {
+				t.Errorf("after %s: selected should be nil", k.name)
+			}
+			if !updated.done {
+				t.Errorf("after %s: done should be true", k.name)
+			}
+			if cmd == nil {
+				t.Errorf("after %s: expected tea.Quit command", k.name)
+			}
+		})
+	}
+}
+
+func TestSelectorView(t *testing.T) {
+	t.Parallel()
+
+	t.Run("renders title and branches", func(t *testing.T) {
+		t.Parallel()
+		m := NewSelector(testWorktrees())
+		output := m.View()
+
+		if !strings.Contains(output, "Switch Worktree") {
+			t.Error("view missing title 'Switch Worktree'")
+		}
+		if !strings.Contains(output, "feature-a") {
+			t.Error("view missing branch 'feature-a'")
+		}
+		if !strings.Contains(output, "main") {
+			t.Error("view missing branch 'main'")
+		}
+	})
+
+	t.Run("done state returns empty", func(t *testing.T) {
+		t.Parallel()
+		m := NewSelector(testWorktrees())
+		m.done = true
+		output := m.View()
+		if output != "" {
+			t.Errorf("done view should be empty, got %q", output)
+		}
+	})
+
+	t.Run("shows help text", func(t *testing.T) {
+		t.Parallel()
+		m := NewSelector(testWorktrees())
+		output := m.View()
+		if !strings.Contains(output, "enter select") {
+			t.Error("view missing help text")
+		}
+	})
+}
+
+func TestSelectorWindowSize(t *testing.T) {
+	t.Parallel()
+
+	m := NewSelector(testWorktrees())
+	result, _ := m.Update(tea.WindowSizeMsg{Width: 100, Height: 30})
+	updated := result.(selectorModel)
+
+	if updated.width != 100 {
+		t.Errorf("width = %d, want 100", updated.width)
+	}
+	if updated.height != 30 {
+		t.Errorf("height = %d, want 30", updated.height)
+	}
+}
+
+func TestSelectorInit(t *testing.T) {
+	t.Parallel()
+
+	m := NewSelector(testWorktrees())
+	cmd := m.Init()
+	if cmd != nil {
+		t.Errorf("Init() returned non-nil cmd: %v", cmd)
+	}
+}
+
+func TestSelectorEmptyList(t *testing.T) {
+	t.Parallel()
+
+	m := NewSelector([]git.Worktree{})
+	// Enter on empty list should not set selected
+	result, _ := m.Update(specialKeyMsg(tea.KeyEnter))
+	updated := result.(selectorModel)
+
+	if updated.selected != nil {
+		t.Error("enter on empty list should not set selected")
+	}
+}

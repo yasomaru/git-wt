@@ -284,34 +284,7 @@ func (m model) viewList() string {
 }
 
 func (m model) buildTags(wt git.Worktree) string {
-	var tags []string
-
-	if wt.IsCurrent {
-		tags = append(tags, currentStyle.Render("current"))
-	}
-
-	if !wt.IsClean() {
-		tags = append(tags, dirtyStyle.Render(wt.StatusText()))
-	}
-
-	if wt.IsMerged {
-		tags = append(tags, mergedStyle.Render("merged"))
-	}
-
-	sync := wt.SyncText()
-	if sync != "-" {
-		tags = append(tags, dimStyle.Render(sync))
-	}
-
-	days := wt.InactiveDays()
-	if days > 30 {
-		tags = append(tags, staleStyle.Render(fmt.Sprintf("%dd stale", days)))
-	}
-
-	if len(tags) == 0 {
-		return ""
-	}
-	return dimStyle.Render("[") + strings.Join(tags, dimStyle.Render(", ")) + dimStyle.Render("]")
+	return BuildTags(wt)
 }
 
 func (m model) viewConfirm() string {
