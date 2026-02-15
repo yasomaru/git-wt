@@ -8,7 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
-	"github.com/git-wt/git-wt/internal/config"
+	"github.com/yasomaru/git-wt/internal/config"
 )
 
 var initCmd = &cobra.Command{

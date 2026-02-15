@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/git-wt/git-wt/internal/git"
-	"github.com/git-wt/git-wt/internal/tui"
+	"github.com/yasomaru/git-wt/internal/git"
+	"github.com/yasomaru/git-wt/internal/tui"
 )
 
 var (

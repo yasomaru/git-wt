@@ -7,7 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/git-wt/git-wt/internal/git"
+	"github.com/yasomaru/git-wt/internal/git"
 )
 
 // testWorktrees returns a reusable slice of worktrees for test setup.

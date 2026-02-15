@@ -1,6 +1,6 @@
 package main
 
-import "github.com/git-wt/git-wt/cmd"
+import "github.com/yasomaru/git-wt/cmd"
 
 var (
 	version = "dev"

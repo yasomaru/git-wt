@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/git-wt/git-wt/testutil"
+	"github.com/yasomaru/git-wt/testutil"
 )
 
 func TestRepoRoot(t *testing.T) {

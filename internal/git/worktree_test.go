@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/git-wt/git-wt/testutil"
+	"github.com/yasomaru/git-wt/testutil"
 )
 
 // realAbs returns a symlink-resolved absolute path. On macOS, /var is a

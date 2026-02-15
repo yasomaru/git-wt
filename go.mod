@@ -1,4 +1,4 @@
-module github.com/git-wt/git-wt
+module github.com/yasomaru/git-wt
 
 go 1.24.1
 

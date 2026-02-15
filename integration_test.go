@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/git-wt/git-wt/testutil"
+	"github.com/yasomaru/git-wt/testutil"
 )
 
 var binPath string

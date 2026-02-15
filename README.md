@@ -26,13 +26,13 @@ brew install git-wt/tap/git-wt
 ### From source
 
 ```sh
-go install github.com/git-wt/git-wt@latest
+go install github.com/yasomaru/git-wt@latest
 ```
 
 ### Binary releases
 
 Download pre-built binaries for Linux, macOS, and Windows from the
-[GitHub Releases](https://github.com/git-wt/git-wt/releases) page.
+[GitHub Releases](https://github.com/yasomaru/git-wt/releases) page.
 
 ## Quick Start
 

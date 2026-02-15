@@ -15,7 +15,7 @@ workflow, testing expectations, and pull request process.
 ### Clone the repository
 
 ```sh
-git clone https://github.com/git-wt/git-wt.git
+git clone https://github.com/yasomaru/git-wt.git
 cd git-wt
 ```
 

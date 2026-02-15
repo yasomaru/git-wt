@@ -9,8 +9,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
-	"github.com/git-wt/git-wt/internal/config"
-	"github.com/git-wt/git-wt/internal/git"
+	"github.com/yasomaru/git-wt/internal/config"
+	"github.com/yasomaru/git-wt/internal/git"
 )
 
 var cleanCmd = &cobra.Command{
