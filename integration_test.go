@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -22,7 +23,11 @@ func TestMain(m *testing.M) {
 	}
 	defer os.RemoveAll(tmp)
 
-	binPath = filepath.Join(tmp, "git-wt")
+	binName := "git-wt"
+	if runtime.GOOS == "windows" {
+		binName = "git-wt.exe"
+	}
+	binPath = filepath.Join(tmp, binName)
 	cmd := exec.Command("go", "build", "-o", binPath, ".")
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -46,8 +51,8 @@ func runBinaryInput(t *testing.T, bin, dir, input string, args ...string) (stdou
 	cmd := exec.Command(bin, args...)
 	cmd.Dir = dir
 	cmd.Env = append(os.Environ(),
-		"GIT_CONFIG_GLOBAL=/dev/null",
-		"GIT_CONFIG_SYSTEM=/dev/null",
+		"GIT_CONFIG_GLOBAL="+devNull(),
+		"GIT_CONFIG_SYSTEM="+devNull(),
 		"NO_COLOR=1",
 	)
 	if input != "" {
@@ -58,6 +63,14 @@ func runBinaryInput(t *testing.T, bin, dir, input string, args ...string) (stdou
 	cmd.Stderr = &errBuf
 	err = cmd.Run()
 	return outBuf.String(), errBuf.String(), err
+}
+
+// devNull returns the null device path for the current OS.
+func devNull() string {
+	if runtime.GOOS == "windows" {
+		return "NUL"
+	}
+	return "/dev/null"
 }
 
 // evalDir resolves macOS /tmp symlinks so paths can be compared reliably.
@@ -76,8 +89,8 @@ func gitRun(t *testing.T, dir string, args ...string) string {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
 	cmd.Env = append(os.Environ(),
-		"GIT_CONFIG_GLOBAL=/dev/null",
-		"GIT_CONFIG_SYSTEM=/dev/null",
+		"GIT_CONFIG_GLOBAL="+devNull(),
+		"GIT_CONFIG_SYSTEM="+devNull(),
 	)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -236,6 +249,10 @@ strategy = "subdirectory"
 }
 
 func TestAdd_PostAddHook(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("hook test uses sh -c which is not available on Windows")
+	}
+
 	repo := evalDir(t, testutil.InitTestRepo(t))
 
 	// Configure a post_add hook that creates a marker file.
@@ -802,8 +819,8 @@ func runBinaryWithHome(t *testing.T, bin, dir, home string, args ...string) (std
 	// Build env with custom HOME, filtering out the original HOME.
 	env := []string{
 		"HOME=" + home,
-		"GIT_CONFIG_GLOBAL=/dev/null",
-		"GIT_CONFIG_SYSTEM=/dev/null",
+		"GIT_CONFIG_GLOBAL=" + devNull(),
+		"GIT_CONFIG_SYSTEM=" + devNull(),
 		"NO_COLOR=1",
 	}
 	for _, e := range os.Environ() {
