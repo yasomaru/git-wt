@@ -1008,7 +1008,10 @@ func TestSelectorConfirm(t *testing.T) {
 	m.cursor = 1 // feature-a
 
 	result, cmd := m.Update(specialKeyMsg(tea.KeyEnter))
-	updated := result.(selectorModel)
+	updated, ok := result.(selectorModel)
+	if !ok {
+		t.Fatalf("Update did not return a selectorModel, got %T", result)
+	}
 
 	if updated.selected == nil {
 		t.Fatal("expected selected to be set after enter")
@@ -1042,7 +1045,10 @@ func TestSelectorCancel(t *testing.T) {
 			m := NewSelector(testWorktrees())
 
 			result, cmd := m.Update(k.msg)
-			updated := result.(selectorModel)
+			updated, ok := result.(selectorModel)
+			if !ok {
+				t.Fatalf("Update did not return a selectorModel, got %T", result)
+			}
 
 			if updated.selected != nil {
 				t.Errorf("after %s: selected should be nil", k.name)

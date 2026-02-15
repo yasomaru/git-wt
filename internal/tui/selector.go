@@ -38,7 +38,10 @@ func RunSelector(worktrees []git.Worktree) (*git.Worktree, error) {
 	if err != nil {
 		return nil, err
 	}
-	final := result.(selectorModel)
+	final, ok := result.(selectorModel)
+	if !ok {
+		return nil, fmt.Errorf("unexpected model type: %T", result)
+	}
 	return final.selected, nil
 }
 

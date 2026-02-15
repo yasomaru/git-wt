@@ -821,7 +821,7 @@ func TestSwitch_ExactMatch(t *testing.T) {
 		t.Fatalf("switch failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
 	}
 
-	got := strings.TrimSpace(stdout)
+	got := filepath.Clean(strings.TrimSpace(stdout))
 	if got != wtPath {
 		t.Errorf("expected path %q, got %q", wtPath, got)
 	}
@@ -837,7 +837,7 @@ func TestSwitch_PartialMatch(t *testing.T) {
 		t.Fatalf("switch partial match failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
 	}
 
-	got := strings.TrimSpace(stdout)
+	got := filepath.Clean(strings.TrimSpace(stdout))
 	if got != wtPath {
 		t.Errorf("expected path %q, got %q", wtPath, got)
 	}
@@ -853,7 +853,7 @@ func TestSwitch_SubstringMatch(t *testing.T) {
 		t.Fatalf("switch substring match failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
 	}
 
-	got := strings.TrimSpace(stdout)
+	got := filepath.Clean(strings.TrimSpace(stdout))
 	if got != wtPath {
 		t.Errorf("expected path %q, got %q", wtPath, got)
 	}
@@ -934,7 +934,7 @@ func TestSwitch_CurrentWorktree(t *testing.T) {
 		t.Fatalf("switch to current worktree failed: %v\nstdout: %s\nstderr: %s", err, stdout, stderr)
 	}
 
-	got := strings.TrimSpace(stdout)
+	got := filepath.Clean(strings.TrimSpace(stdout))
 	if got != repo {
 		t.Errorf("expected path %q, got %q", repo, got)
 	}
