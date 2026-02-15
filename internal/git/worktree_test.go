@@ -307,7 +307,7 @@ func TestAddWorktree_NewBranch(t *testing.T) {
 		t.Fatalf("AddWorktree() error: %v", err)
 	}
 	t.Cleanup(func() {
-		run(dir, "worktree", "remove", "--force", targetPath)
+		_, _ = run(dir, "worktree", "remove", "--force", targetPath)
 	})
 
 	if _, err := os.Stat(targetPath); os.IsNotExist(err) {
@@ -328,7 +328,7 @@ func TestAddWorktree_ExistingBranch(t *testing.T) {
 		t.Fatalf("AddWorktree() error: %v", err)
 	}
 	t.Cleanup(func() {
-		run(dir, "worktree", "remove", "--force", targetPath)
+		_, _ = run(dir, "worktree", "remove", "--force", targetPath)
 	})
 
 	if _, err := os.Stat(targetPath); os.IsNotExist(err) {
@@ -363,7 +363,7 @@ func TestAddWorktree_WithBaseBranch(t *testing.T) {
 		t.Fatalf("AddWorktree() with baseBranch error: %v", err)
 	}
 	t.Cleanup(func() {
-		run(dir, "worktree", "remove", "--force", targetPath)
+		_, _ = run(dir, "worktree", "remove", "--force", targetPath)
 	})
 
 	if _, err := os.Stat(targetPath); os.IsNotExist(err) {

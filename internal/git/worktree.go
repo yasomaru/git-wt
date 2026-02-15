@@ -231,7 +231,7 @@ func RemoveWorktree(repoDir, wtPath string, deleteBranch bool) error {
 	}
 
 	if deleteBranch && branchName != "" {
-		run(repoDir, "branch", "-d", branchName)
+		_, _ = run(repoDir, "branch", "-d", branchName)
 	}
 	return nil
 }

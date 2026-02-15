@@ -29,10 +29,10 @@ Use --stale to target branches inactive for a specified number of days.`,
 }
 
 var (
-	cleanMerged   bool
+	cleanMerged    bool
 	cleanStaleDays int
-	cleanDryRun   bool
-	cleanForce    bool
+	cleanDryRun    bool
+	cleanForce     bool
 )
 
 func init() {
@@ -117,7 +117,7 @@ func runClean(cmd *cobra.Command, args []string) error {
 	if len(candidates) == 0 {
 		color.Green("  No worktrees to clean up.")
 		if cfg.Cleanup.AutoPrune {
-			git.PruneWorktrees(repoRoot)
+			_ = git.PruneWorktrees(repoRoot)
 		}
 		return nil
 	}
@@ -173,7 +173,7 @@ func runClean(cmd *cobra.Command, args []string) error {
 
 	// Prune
 	if cfg.Cleanup.AutoPrune {
-		git.PruneWorktrees(repoRoot)
+		_ = git.PruneWorktrees(repoRoot)
 	}
 
 	fmt.Printf("\n  Cleaned up %d worktree(s).\n", removed)

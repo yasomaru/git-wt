@@ -99,7 +99,7 @@ func printWorktreeTable(worktrees []git.Worktree) {
 		}
 
 		// Color the branch name
-		branchStr := name
+		var branchStr string
 		if wt.IsCurrent {
 			branchStr = color.GreenString("* " + name)
 			// Adjust for the "* " prefix when padding

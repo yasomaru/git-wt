@@ -37,7 +37,7 @@ func AddWorktree(t *testing.T, dir, branch string) string {
 	runGit(t, dir, "worktree", "add", "-b", branch, wtPath)
 	t.Cleanup(func() {
 		// Best-effort cleanup
-		exec.Command("git", "-C", dir, "worktree", "remove", "--force", wtPath).Run()
+		_ = exec.Command("git", "-C", dir, "worktree", "remove", "--force", wtPath).Run()
 	})
 	return wtPath
 }

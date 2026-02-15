@@ -56,11 +56,6 @@ type model struct {
 	height        int
 }
 
-type removeResult struct {
-	branch string
-	err    error
-}
-
 func New(worktrees []git.Worktree, repoDir string) model {
 	items := make([]item, len(worktrees))
 	for i, wt := range worktrees {
@@ -193,7 +188,7 @@ func (m model) executeRemoval() (tea.Model, tea.Cmd) {
 			m.removed = append(m.removed, branch)
 		}
 	}
-	git.PruneWorktrees(m.repoDir)
+	_ = git.PruneWorktrees(m.repoDir)
 	m.mode = modeDone
 	return m, nil
 }
