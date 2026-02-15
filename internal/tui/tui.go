@@ -332,8 +332,7 @@ func (m model) viewConfirm() string {
 
 	b.WriteString("\n")
 
-	no := "  No  "
-	yes := "  Yes  "
+	var no, yes string
 	if m.confirmCursor == 0 {
 		no = confirmNoStyle.Render("▸ No ")
 		yes = dimStyle.Render("  Yes ")
