@@ -33,6 +33,7 @@ brews:
   - repository:
       owner: yasomaru
       name: homebrew-tap
+      token: "{{ .Env.GH_PAT }}"
     homepage: https://github.com/yasomaru/git-wt
     description: A smarter way to manage git worktrees
     license: MIT
