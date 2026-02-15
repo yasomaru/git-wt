@@ -816,15 +816,16 @@ func runBinaryWithHome(t *testing.T, bin, dir, home string, args ...string) (std
 	cmd := exec.Command(bin, args...)
 	cmd.Dir = dir
 
-	// Build env with custom HOME, filtering out the original HOME.
+	// Build env with custom HOME, filtering out the original HOME/USERPROFILE.
 	env := []string{
 		"HOME=" + home,
+		"USERPROFILE=" + home,
 		"GIT_CONFIG_GLOBAL=" + devNull(),
 		"GIT_CONFIG_SYSTEM=" + devNull(),
 		"NO_COLOR=1",
 	}
 	for _, e := range os.Environ() {
-		if strings.HasPrefix(e, "HOME=") {
+		if strings.HasPrefix(e, "HOME=") || strings.HasPrefix(e, "USERPROFILE=") {
 			continue
 		}
 		if strings.HasPrefix(e, "GIT_CONFIG_GLOBAL=") {
