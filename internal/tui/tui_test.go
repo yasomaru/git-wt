@@ -1107,7 +1107,10 @@ func TestSelectorWindowSize(t *testing.T) {
 
 	m := NewSelector(testWorktrees())
 	result, _ := m.Update(tea.WindowSizeMsg{Width: 100, Height: 30})
-	updated := result.(selectorModel)
+	updated, ok := result.(selectorModel)
+	if !ok {
+		t.Fatalf("Update did not return a selectorModel, got %T", result)
+	}
 
 	if updated.width != 100 {
 		t.Errorf("width = %d, want 100", updated.width)
@@ -1133,7 +1136,10 @@ func TestSelectorEmptyList(t *testing.T) {
 	m := NewSelector([]git.Worktree{})
 	// Enter on empty list should not set selected
 	result, _ := m.Update(specialKeyMsg(tea.KeyEnter))
-	updated := result.(selectorModel)
+	updated, ok := result.(selectorModel)
+	if !ok {
+		t.Fatalf("Update did not return a selectorModel, got %T", result)
+	}
 
 	if updated.selected != nil {
 		t.Error("enter on empty list should not set selected")
