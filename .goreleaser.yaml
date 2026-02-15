@@ -27,13 +27,19 @@ checksum:
   algorithm: sha256
 
 changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
-      - "Merge pull request"
-      - "Merge branch"
+  disable: true
+
+brews:
+  - repository:
+      owner: yasomaru
+      name: homebrew-tap
+    homepage: https://github.com/yasomaru/git-wt
+    description: A smarter way to manage git worktrees
+    license: MIT
+    install: |
+      bin.install "git-wt"
+    test: |
+      system "#{bin}/git-wt", "version"
 
 release:
   github:
@@ -41,3 +47,4 @@ release:
     name: git-wt
   draft: false
   prerelease: auto
+  release_notes_file: RELEASE_NOTES.md
