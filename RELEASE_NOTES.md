@@ -1,48 +1,36 @@
-## git-wt v1.0.0
+## What's New
 
-A smarter way to manage git worktrees.
+### `git wt switch` command
 
-### Highlights
+Quickly switch between worktrees by branch name without manually typing paths.
 
-- **Interactive TUI** -- Select and remove worktrees visually with keyboard navigation
-- **Smart worktree creation** -- Automatic path resolution, branch management, and post-add hooks
-- **Rich status display** -- See modified files, sync status, merge state, and stale indicators at a glance
-- **Easy cleanup** -- Remove merged or stale worktrees with a single command
-- **Flexible configuration** -- TOML-based config with global/local cascade and layout strategies
-
-### Commands
-
-| Command | Description |
-|---------|-------------|
-| `git wt` | Open interactive TUI |
-| `git wt add <branch>` | Create a worktree with smart defaults |
-| `git wt ls` | List all worktrees with status |
-| `git wt clean` | Remove merged or stale worktrees |
-| `git wt init` | Generate default configuration |
-| `git wt version` | Print version information |
-
-### Installation
-
-**Homebrew** (coming soon)
-```
-brew install yasomaru/tap/git-wt
+```sh
+git wt switch feature-auth   # exact match
+git wt switch feat           # prefix/substring match
+git wt switch                # interactive selector
 ```
 
-**Go**
+**Matching priority**: exact > prefix > substring (all case-insensitive).
+When multiple worktrees match, an interactive TUI selector is shown.
+
+### Shell integration
+
+Set up the `wt` shell function for automatic `cd`:
+
+```sh
+# zsh
+eval "$(git wt switch --init zsh)"
+
+# bash
+eval "$(git wt switch --init bash)"
+
+# fish
+git wt switch --init fish | source
 ```
-go install github.com/yasomaru/git-wt@v1.0.0
-```
 
-**Binary**
+Then use `wt switch <branch>` (or `wt sw <branch>`) to switch and cd in one step.
 
-Download from the assets below for your platform.
+## Internal improvements
 
-### Supported Platforms
-
-| OS | Architecture |
-|----|-------------|
-| Linux | amd64, arm64 |
-| macOS | amd64 (Intel), arm64 (Apple Silicon) |
-| Windows | amd64, arm64 |
-
-**Full Changelog**: https://github.com/yasomaru/git-wt/blob/main/CHANGELOG.md
+- Extracted shared `BuildTags` helper for consistent tag rendering across TUIs
+- New single-select TUI component (`selector`) for worktree selection
