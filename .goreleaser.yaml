@@ -37,7 +37,7 @@ changelog:
 
 release:
   github:
-    owner: git-wt
+    owner: yasomaru
     name: git-wt
   draft: false
   prerelease: auto
